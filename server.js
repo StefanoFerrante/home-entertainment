@@ -3,6 +3,19 @@ var bodyparser = require('body-parser');
 var fs = require('fs');
 var multer = require('multer');
 
+
+var storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, '/tmp')
+  },
+  filename: function (req, file, cb) {
+    cb(null, file.originalname + '-' + Date.now())
+  }
+})
+
+var upload = multer({
+        storage: storage
+    })
 // Create application/x-www-form-urlencoded parser
 var urlencodedParser = bodyparser.urlencoded({
     extended: false
@@ -10,10 +23,7 @@ var urlencodedParser = bodyparser.urlencoded({
 
 var app = express();
 
-app.use(urlencodedParser);
-app.use(multer({
-    dest: '/'
-}));
+// app.use(urlencodedParser);
 app.use(express.static('static'));
 
 
@@ -28,9 +38,6 @@ var handleGETHome = function(req, res) {
 };
 
 
-var uploadfile = function(req, res) {
-    console.log(req.asher);
-};
 
 app.get('/', handleGETHome);
 app.get('/index.html', handleGETHome);
@@ -47,7 +54,12 @@ app.post('/', function(req, res) {
     res.send('POST Hello World');
 });
 
-app.post('/upload', uploadfile);
+app.post('/upload', upload.single('asher'), function(req, res) {
+    var fileUploaded = req.file;
+    console.log(fileUploaded);
+    res.send('Upload completed');
+    
+});
 
 
 
